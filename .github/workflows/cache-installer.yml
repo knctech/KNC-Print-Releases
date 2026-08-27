@@ -1,10 +1,10 @@
 name: Cache KNC Printer installer in repository
 
 on:
-  push:
-    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
     paths:
-      - '.github/workflows/cache-installer.yml'
+      - 'cache-v2.8.3.trigger'
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,10 @@ jobs:
   cache-installer:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Download installer
         run: |
@@ -25,7 +27,7 @@ jobs:
             https://github.com/knctech/KNC-Print-Releases/releases/download/v2.8.3/KNC-PRINTER-Setup.exe
           test -s packages/v2.8.3/KNC-PRINTER-Setup.exe
 
-      - name: Commit installer to repository
+      - name: Commit installer to PR branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -35,4 +37,4 @@ jobs:
             exit 0
           fi
           git commit -m "Add KNC Printer v2.8.3 installer [skip ci]"
-          git push
+          git push origin HEAD:${{ github.head_ref }}
